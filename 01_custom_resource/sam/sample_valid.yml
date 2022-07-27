@@ -1,0 +1,30 @@
+AWSTemplateFormatVersion: "2010-09-09"
+
+Parameters:
+  CustomResourceStack:
+    Type: String
+
+Resources:
+  Example:
+    Type: AWS::CloudFormation::CustomResource
+    Properties:
+      ServiceToken:
+        Fn::ImportValue: !Sub ${CustomResourceStack}-ExampleCustomARN
+      Playground:
+        Status: SUCCESS
+        Reason: Testing
+        PhysicalResourceId: "123abc 🚀"
+        Data:
+          Whatever: something
+          Rocket: 🚀
+
+  ExampleBis:
+    Type: Custom::HelloWorld
+    Properties:
+      ServiceToken:
+        Fn::ImportValue: !Sub ${CustomResourceStack}-ExampleCustomARN
+      Playground:
+        Status: SUCCESS
+        PhysicalResourceId: "123abc 🚀"
+        Data:
+          Hello: World

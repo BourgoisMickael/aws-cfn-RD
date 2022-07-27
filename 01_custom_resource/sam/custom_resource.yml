@@ -1,0 +1,41 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
+
+Globals:
+  Function:
+    Runtime: nodejs16.x
+    Timeout: 180
+    Environment:
+      Variables:
+        AWS_NODEJS_CONNECTION_REUSE_ENABLED: 1
+        NODE_OPTIONS: "--enable-source-maps"
+
+Resources:
+  NodeModulesLayer:
+    Type: AWS::Serverless::LayerVersion
+    Properties:
+      LayerName: !Sub ${AWS::StackName}-NodeModulesLayer
+      Description: !Sub node modules
+      ContentUri: ../dist/layer
+      CompatibleRuntimes:
+        - nodejs16.x
+
+  CustomResource:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: index.handler
+      CodeUri: ../dist/custom_resource
+      Layers:
+        - !Ref NodeModulesLayer
+
+Outputs:
+  ExampleCustomName:
+    Description: Example custom name
+    Value: !Ref CustomResource
+    Export:
+      Name: !Sub ${AWS::StackName}-ExampleCustomName
+  ExampleCustomARN:
+    Description: Example custom ARN
+    Value: !GetAtt CustomResource.Arn
+    Export:
+      Name: !Sub ${AWS::StackName}-ExampleCustomARN

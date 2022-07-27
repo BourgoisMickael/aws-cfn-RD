@@ -1,0 +1,10 @@
+{
+    "extends": "@tsconfig/node16-strictest/tsconfig.json",
+    "compilerOptions": {
+        "noPropertyAccessFromIndexSignature": false,
+        "outDir": "dist",
+        "rootDir": "src",
+        "sourceMap": true
+    },
+    "include": ["src/**/*"]
+}

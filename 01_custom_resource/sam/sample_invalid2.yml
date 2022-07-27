@@ -1,0 +1,19 @@
+AWSTemplateFormatVersion: "2010-09-09"
+
+Parameters:
+  CustomResourceStack:
+    Type: String
+
+Resources:
+  Example:
+    Type: Custom::Failure
+    Properties:
+      ServiceToken:
+        Fn::ImportValue: !Sub ${CustomResourceStack}-ExampleCustomARN
+      Playground:
+        Status: FAILED
+        PhysicalResourceId: "Invalid2 ⛔"
+        Reason: Testing playground ⚠️
+        ResponseData:
+          Hello: World
+          Emoji: "🤯"
