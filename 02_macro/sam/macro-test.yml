@@ -1,0 +1,28 @@
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+  S3:
+    Type: AWS::S3::Bucket
+    Properties:
+      Tags:
+        - Key: testing
+          Value:
+            Fn::Transform:
+              Name: Reverse
+              Parameters:
+                InStr: MickaelTesting
+
+Outputs:
+  MacroTesting:
+    Description:
+      Fn::Transform:
+        Name: Reverse
+        Parameters:
+          InStr: Example macro testing reverse
+    Value:
+      Fn::Transform:
+        Name: Reverse
+        Parameters:
+          InStr: Example
+  S3:
+    Value: !Ref S3

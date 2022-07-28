@@ -1,0 +1,32 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
+
+Globals:
+  Function:
+    Runtime: nodejs16.x
+    Timeout: 180
+    Environment:
+      Variables:
+        NODE_OPTIONS: "--enable-source-maps"
+
+Resources:
+  ReverseTransformFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: index.handler
+      InlineCode: |
+        exports.handler = async function handler (event) {
+          console.log(event)
+          return {
+            requestId : event.requestId,
+            status : "success",
+            fragment : event.params.InStr.split('').reverse().join('')
+          }
+        }
+
+  ReverseTransformMacro:
+    Type: AWS::CloudFormation::Macro
+    Properties:
+      Name: "Reverse"
+      Description: Reverse a string
+      FunctionName: !GetAtt ReverseTransformFunction.Arn
