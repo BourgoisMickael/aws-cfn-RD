@@ -1,0 +1,17 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: Test drift detection
+
+Resources:
+  S3:
+    Type: AWS::S3::Bucket
+    Properties:
+      Tags:
+        - Key: Hello
+          Value: World
+
+  S3Bis:
+    Type: AWS::S3::Bucket
+    Properties:
+      Tags:
+        - Key: Hello
+          Value: World
