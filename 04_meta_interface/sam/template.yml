@@ -1,0 +1,63 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: >
+  Use Metadata AWS::CloudFormation::Interface. See grouping in console (update or changeset)
+
+Parameters:
+  A1:
+    Type: String
+    Default: A1
+  A2:
+    Type: String
+    Description: "A2 Description"
+    Default: A2
+  A3:
+    Type: String
+    Default: A3
+  B1:
+    Type: String
+    Default: B1
+  B2:
+    Type: String
+    Default: B2
+  B3:
+    Type: String
+    Default: B3
+
+Metadata:
+  AWS::CloudFormation::Interface:
+    ParameterGroups:
+      - Label:
+          default: Group A
+        Parameters:
+          - A1
+          - A2
+          - A3
+      - Label:
+          default: Group B
+        Parameters:
+          - B1
+          - B2
+          - B3
+    ParameterLabels:
+      A2:
+        default: Some label for A2
+      B2:
+        default: Some label for B2
+
+Resources:
+  TmpBucket:
+    Type: AWS::S3::Bucket
+
+Outputs:
+  A1:
+    Value: !Ref A1
+  A2:
+    Value: !Ref A2
+  A3:
+    Value: !Ref A3
+  B1:
+    Value: !Ref B1
+  B2:
+    Value: !Ref B2
+  B3:
+    Value: !Ref B3
