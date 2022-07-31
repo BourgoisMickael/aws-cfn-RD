@@ -1,0 +1,125 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: >
+  Route an event from EventBridge to an SQS queue.
+  Contains a queue, a dlq, an event rule, and a queue policy.
+
+Parameters:
+  QueueVisibilityTimeout:
+    Description: Visibility timeout of the Queue. Defaults to 30 seconds
+    Type: Number
+    Default: 30
+  EventBusName:
+    Description: Event Bus Name. Defaults to 'default'
+    Type: String
+    Default: default
+  EventPattern:
+    Description: JSON Sent to AWS::Events::Rule EventPattern. Must be stringified.
+    Type: String
+  MaxReceiveCount:
+    Description: The number of times a message is delivered to the source queue before being moved to the DLQ
+    Type: Number
+    Default: 5
+  QueueName:
+    Description: >
+      A name for the queue. Optional for standard queue but required for FIFO queue.
+      For FIFO queue, the name will be appended with `.fifo` you don't need to add the suffix.
+    Type: String
+    Default: ""
+  FifoQueue:
+    Description: If set to true, creates a FIFO queue
+    Type: String
+    AllowedValues:
+      - "true"
+      - "false"
+    Default: "false"
+  MessageGroupId:
+    Description: The FIFO message group ID to use as the target of the Event Rule.
+    Type: String
+    Default: general
+
+Rules:
+  QueueNameRequiredForFifoQueue:
+    RuleCondition: !Equals [!Ref FifoQueue, "true"]
+    Assertions:
+      - Assert: !Not [!Equals [!Ref QueueName, ""]]
+        AssertDescription: If the queue is FIFO a QueueName is required
+
+Conditions:
+  HasName: !Not [!Equals [!Ref QueueName, ""]]
+  IsFifo: !Equals [!Ref FifoQueue, "true"]
+
+Resources:
+  DLQ:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: !If [HasName, !If [IsFifo, !Sub "${QueueName}DLQ.fifo", !Sub "${QueueName}DLQ"], !Ref AWS::NoValue]
+      FifoQueue: !If [IsFifo, true, !Ref AWS::NoValue]
+      ContentBasedDeduplication: !If [IsFifo, true, !Ref AWS::NoValue]
+
+  Queue:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: !If [HasName, !If [IsFifo, !Sub "${QueueName}.fifo", !Ref QueueName], !Ref AWS::NoValue]
+      FifoQueue: !If [IsFifo, true, !Ref AWS::NoValue]
+      ContentBasedDeduplication: !If [IsFifo, true, !Ref AWS::NoValue]
+      VisibilityTimeout: !Ref QueueVisibilityTimeout
+      RedrivePolicy:
+        deadLetterTargetArn: !GetAtt DLQ.Arn
+        maxReceiveCount: !Ref MaxReceiveCount
+
+  EventRule:
+    Type: AWS::Events::Rule
+    Properties:
+      Description: Send the event into the queue
+      EventBusName: !Ref EventBusName
+      EventPattern: !Ref EventPattern
+      State: ENABLED
+      Targets:
+        - Arn: !GetAtt Queue.Arn
+          Id: EventToQeueRule
+          SqsParameters: !If
+            - IsFifo
+            - MessageGroupId: !Ref MessageGroupId
+            - !Ref AWS::NoValue
+
+  QueuePolicy:
+    Type: AWS::SQS::QueuePolicy
+    Properties:
+      Queues:
+        - !Ref Queue
+      PolicyDocument:
+        Statement:
+          - Action:
+              - SQS:SendMessage
+            Effect: Allow
+            Resource: !GetAtt Queue.Arn
+            Principal:
+              Service: events.amazonaws.com
+            Condition:
+              ArnEquals:
+                aws:SourceArn: !GetAtt EventRule.Arn
+
+Outputs:
+  QueueURL:
+    Description: SQS Queue URL
+    Value: !Ref Queue
+
+  QueueARN:
+    Description: SQS Queue ARN
+    Value: !GetAtt Queue.Arn
+
+  QueueName:
+    Description: SQS Queue Name
+    Value: !GetAtt Queue.QueueName
+
+  DLQURL:
+    Description: DLQ URL
+    Value: !Ref DLQ
+
+  DLQARN:
+    Description: DQL ARN
+    Value: !GetAtt DLQ.Arn
+
+  DLQName:
+    Description: DLQ Name
+    Value: !GetAtt DLQ.QueueName

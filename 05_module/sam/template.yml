@@ -1,0 +1,16 @@
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+  ExampleEvent2Queue:
+    Type: MBO::Example::Event2Queue::MODULE
+    Properties:
+      EventPattern: >-
+        {
+          "source": ["mbo.sample"],
+          "detail-type": ["testing"]
+        }
+      FifoQueue: true
+      QueueName: mbo-event2queue-sample
+      EventBusName: default
+      QueueVisibilityTimeout: 30
+      MaxReceiveCount: 5
