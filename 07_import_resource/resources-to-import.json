@@ -1,0 +1,9 @@
+[
+    {
+        "ResourceType": "AWS::DynamoDB::Table",
+        "LogicalResourceId": "ExistingTable",
+        "ResourceIdentifier": {
+            "TableName": "abc"
+        }
+    }
+]
