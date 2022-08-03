@@ -1,0 +1,19 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
+
+Description: Test stack to trigger update event
+
+Resources:
+  TestingQueue2:
+    Type: AWS::SQS::Queue
+
+  TestingS32:
+    Type: AWS::S3::Bucket
+
+  TestingFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Runtime: nodejs14.x
+      Handler: index.handler
+      InlineCode: |
+        exports.handler = () => {}

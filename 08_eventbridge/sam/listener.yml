@@ -1,0 +1,42 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
+
+Globals:
+  Function:
+    Runtime: nodejs16.x
+
+Description: Listen to CloudFormation events
+
+Resources:
+  DLQ:
+    Type: AWS::SQS::Queue
+
+  Listener:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: index.handler
+      InlineCode: |
+        exports.handler = console.log
+      Events:
+        CloudFormationEvt:
+          Type: EventBridgeRule
+          Properties:
+            DeadLetterConfig:
+              Arn: !GetAtt DLQ.Arn
+            Pattern:
+              source:
+                - aws.cloudformation
+              detail-type:
+                - CloudFormation Stack Status Change
+              account:
+                - !Ref AWS::AccountId
+              detail:
+                status-details:
+                  status:
+                    - CREATE_COMPLETE
+                    - DELETE_COMPLETE
+                    - UPDATE_COMPLETE
+                    - IMPORT_COMPLETE
+            RetryPolicy:
+              MaximumRetryAttempts: 5
+              MaximumEventAgeInSeconds: 900
