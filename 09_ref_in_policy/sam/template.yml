@@ -1,0 +1,27 @@
+AWSTemplateFormatVersion: 2010-09-09
+Transform: AWS::LanguageExtensions
+
+Parameters:
+  Stage:
+    Type: String
+    AllowedValues:
+    - Prod
+    - Staging
+    - Dev
+
+Conditions:
+  IsProd: !Equals [!Ref Stage, Prod]
+
+Resources:
+  Table:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      KeySchema:
+        - AttributeName: primaryKey
+          KeyType: HASH
+      AttributeDefinitions:
+        - AttributeName: primaryKey
+          AttributeType: S
+      BillingMode: 'PAY_PER_REQUEST'
+    DeletionPolicy: !If [IsProd, Retain, Delete]
+    UpdateReplacePolicy: !If [IsProd, Retain, Delete]
